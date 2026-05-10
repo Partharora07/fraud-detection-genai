@@ -433,8 +433,8 @@ elif page == "📈 Model Results":
     st.markdown('<div class="section-title">🌟 Feature Importance</div>', unsafe_allow_html=True)
     fig,ax=plt.subplots(figsize=(10,4),facecolor='#0d1526')
     ax.set_facecolor('#0d1526')
-    imp=pd.Series(pred_model.feature_importances_ if model_loaded and hasattr(pred_model,'feature_importances_')
-                  else clf_b.feature_importances_, index=features).sort_values().tail(10)
+    # Always use local augmented model for feature importance (same features as app)
+    imp=pd.Series(clf_b.feature_importances_, index=features).sort_values().tail(10)
     imp.plot(kind='barh',ax=ax,color=plt.cm.YlOrRd(np.linspace(0.3,0.9,len(imp))),edgecolor='#2a4a8a')
     ax.set_title('Top 10 Feature Importances',color='white',fontweight='bold',fontsize=13)
     ax.set_xlabel('Importance Score',color='#8899bb')
@@ -485,8 +485,9 @@ elif page == "🔍 Live Prediction":
     if st.button("🔍 Predict Transaction"):
         input_df=pd.DataFrame([[time_val,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,amount]],columns=features)
         input_scaled=scaler.transform(input_df)
-        pred=pred_model.predict(input_scaled)[0]
-        prob=pred_model.predict_proba(input_scaled)[0]
+        # Always use local model for prediction (same features as app)
+        pred=clf_b.predict(input_scaled)[0]
+        prob=clf_b.predict_proba(input_scaled)[0]
         fraud_prob=prob[1]*100; normal_prob=prob[0]*100
 
         st.markdown("---")
@@ -526,3 +527,4 @@ elif page == "🔍 Live Prediction":
         ax.tick_params(colors='#8899bb')
         for s in ax.spines.values(): s.set_color('#2a4a8a')
         st.pyplot(fig); plt.close()
+
